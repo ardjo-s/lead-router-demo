@@ -6,3 +6,8 @@
   from = "/api/evaluate"
   to = "/.netlify/functions/evaluate"
   status = 200
+
+[[redirects]]
+  from = "/methodology"
+  to = "/methodology.html"
+  status = 200

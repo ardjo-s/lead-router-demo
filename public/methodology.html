@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="description" content="How Lead Router evaluates model quality, cost, and latency.">
+    <title>Methodology · Lead Router</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <main class="methodology-main">
+      <nav class="site-nav" aria-label="Primary navigation">
+        <a class="wordmark" href="/">Lead Router</a>
+        <a href="/methodology" aria-current="page">Methodology</a>
+      </nav>
+
+      <header class="methodology-header">
+        <p class="eyebrow">EVALUATION METHOD</p>
+        <h1>Measured, not guessed.</h1>
+        <p class="lede">Lead Router uses frozen evidence, labeled ground truth, and a deterministic local scorer. No model judges another model.</p>
+      </header>
+
+      <section aria-labelledby="same-test">
+        <p class="section-number">01</p>
+        <div>
+          <h2 id="same-test">Every model gets the same test</h2>
+          <p>The benchmark is loaded as data from the allowlisted ASCII Box workflow repository. It contains five frozen, dated cases and eighteen public professional sources. The candidate list, prompt, evidence packet, output contract, and reasoning effort are identical for every accessible model.</p>
+          <p>Repository code is never executed. A recorded run represents the exact benchmark version shown in its report.</p>
+        </div>
+      </section>
+
+      <section aria-labelledby="quality-score">
+        <p class="section-number">02</p>
+        <div>
+          <h2 id="quality-score">Quality is computed from ground truth</h2>
+          <p>The scorer is ordinary JavaScript. Given the same benchmark and the same model output, it returns the same result every time.</p>
+          <div class="formula" aria-label="Quality score formula">
+            <span>Quality</span>
+            <strong>70% role F1 + 20% evidence exactness + 10% company-fit accuracy</strong>
+          </div>
+          <dl class="metric-list">
+            <div>
+              <dt>Role precision</dt>
+              <dd>How many returned people have the expected buying role. It penalizes irrelevant leads.</dd>
+            </div>
+            <div>
+              <dt>Role recall</dt>
+              <dd>How many expected buyers were found. It penalizes missed leads.</dd>
+            </div>
+            <div>
+              <dt>Role F1</dt>
+              <dd>The harmonic mean of precision and recall, so returning too many or too few people cannot game the score.</dd>
+            </div>
+            <div>
+              <dt>Evidence exactness</dt>
+              <dd>A quote counts only when it appears exactly in the supplied source text.</dd>
+            </div>
+            <div>
+              <dt>Company-fit accuracy</dt>
+              <dd>Whether each company is correctly accepted or rejected against the benchmark label.</dd>
+            </div>
+          </dl>
+        </div>
+      </section>
+
+      <section aria-labelledby="eligibility">
+        <p class="section-number">03</p>
+        <div>
+          <h2 id="eligibility">Bad outputs cannot win cheaply</h2>
+          <p>A completed model is eligible only when its output is structurally valid, its quality is at least <strong>0.75</strong>, pricing is known, and measured usage and latency are present.</p>
+          <div class="formula" aria-label="Recommendation score formula">
+            <span>Recommendation</span>
+            <strong>65% quality + 20% cost efficiency + 15% latency efficiency</strong>
+          </div>
+          <p>Cost and latency are normalized against the best completed value in that run. Ties break by higher quality, then lower cost, then lower latency.</p>
+        </div>
+      </section>
+
+      <section aria-labelledby="measurements">
+        <p class="section-number">04</p>
+        <div>
+          <h2 id="measurements">Cost and latency are observed</h2>
+          <dl class="metric-list compact">
+            <div>
+              <dt>Measured cost</dt>
+              <dd>The provider-reported cost for the actual request. A separate estimate uses the dated price snapshot and uncached input, cached input, and output tokens.</dd>
+            </div>
+            <div>
+              <dt>Latency</dt>
+              <dd>Elapsed time from sending the non-streaming model request until its complete response arrives. It is not time to first token.</dd>
+            </div>
+          </dl>
+        </div>
+      </section>
+
+      <section aria-labelledby="determinism">
+        <p class="section-number">05</p>
+        <div>
+          <h2 id="determinism">What is deterministic—and what is not</h2>
+          <div class="determinism-grid">
+            <div>
+              <h3>Deterministic</h3>
+              <ul>
+                <li>Frozen benchmark cases and labeled ground truth</li>
+                <li>Candidate intersection and output validation</li>
+                <li>Quality formulas, weights, threshold, and tie-breaks</li>
+                <li>Cost reconstruction from recorded token usage</li>
+              </ul>
+            </div>
+            <div>
+              <h3>Variable</h3>
+              <ul>
+                <li>The model response itself</li>
+                <li>Provider routing and service load</li>
+                <li>Token usage, measured cost, and network latency</li>
+                <li>Results across repeated runs</li>
+              </ul>
+            </div>
+          </div>
+          <aside class="limitation">
+            <strong>Demo-low confidence.</strong>
+            The MVP runs one trial per model on five cases. It proves the evaluation path and one observed tradeoff; it does not provide statistical confidence or a universal model ranking.
+          </aside>
+        </div>
+      </section>
+
+      <footer>
+        <a class="button-link" href="/">Run the benchmark</a>
+        <p>Benchmark identity, tested, skipped, failed models, and limitations are preserved in every report.</p>
+      </footer>
+    </main>
+  </body>
+</html>
