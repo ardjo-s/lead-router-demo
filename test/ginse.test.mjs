@@ -6,6 +6,7 @@ import { createHandler } from "../netlify/functions/run.mjs";
 import {
   actionOutputFromReport,
   createBlobOperationStore,
+  GINSE_AUDIENCE,
   GINSE_APP_ID,
   GINSE_ISSUER,
   providerOperationId,
@@ -84,7 +85,8 @@ function tokenFixture(overrides = {}) {
   const now = 1_750_000_000;
   const payload = Buffer.from(JSON.stringify({
     iss: GINSE_ISSUER,
-    aud: GINSE_APP_ID,
+    aud: GINSE_AUDIENCE,
+    sub: GINSE_APP_ID,
     iat: now,
     exp: now + 120,
     ...overrides,
@@ -104,6 +106,16 @@ test("verifies a bound, unexpired Ginse Ed25519 bearer", async () => {
   const expired = tokenFixture({ exp: 1_749_999_000 });
   await assert.rejects(
     verifyGinseBearer(expired.authorization, expired),
+    /Invalid Ginse token claims/,
+  );
+  const wrongAudience = tokenFixture({ aud: "https://example.com" });
+  await assert.rejects(
+    verifyGinseBearer(wrongAudience.authorization, wrongAudience),
+    /Invalid Ginse token claims/,
+  );
+  const wrongApp = tokenFixture({ sub: "another-app" });
+  await assert.rejects(
+    verifyGinseBearer(wrongApp.authorization, wrongApp),
     /Invalid Ginse token claims/,
   );
 });

@@ -8,6 +8,7 @@ export const GINSE_APP_ID = "1a5d61ec-fab8-4a1e-bd93-1f7ab7ac0e9c";
 export const GINSE_ISSUER = "https://api.ginse.ai";
 export const GINSE_JWKS_URL = `${GINSE_ISSUER}/.well-known/jwks.json`;
 export const GINSE_RUN_URL = "https://lead-router-ascii-box.netlify.app/run";
+export const GINSE_AUDIENCE = new URL(GINSE_RUN_URL).origin;
 export const GINSE_STATUS_URL = `${GINSE_RUN_URL}/status`;
 
 const ajv = new Ajv2020({ allErrors: true, strict: true });
@@ -41,7 +42,7 @@ const parseJsonSegment = (value, label) => {
 
 const audienceMatches = (audience) => {
   const values = Array.isArray(audience) ? audience : [audience];
-  return values.includes(GINSE_APP_ID) || values.includes(GINSE_RUN_URL);
+  return values.includes(GINSE_AUDIENCE);
 };
 
 async function loadJwks(fetchImpl, now, force = false) {
@@ -113,6 +114,7 @@ export async function verifyGinseBearer(
   if (
     payload.iss !== GINSE_ISSUER
     || !audienceMatches(payload.aud)
+    || payload.sub !== GINSE_APP_ID
     || !Number.isFinite(payload.exp)
     || payload.exp < currentSeconds - CLOCK_SKEW_SECONDS
     || (Number.isFinite(payload.nbf) && payload.nbf > currentSeconds + CLOCK_SKEW_SECONDS)
