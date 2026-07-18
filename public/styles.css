@@ -139,7 +139,64 @@ input:focus-visible {
   padding: 26px;
   font-size: 1.05rem;
   line-height: 1.65;
-  white-space: pre-wrap;
+}
+
+#answer h2,
+#answer h3 {
+  margin-top: 0;
+}
+
+#answer h2 {
+  font-size: clamp(1.8rem, 5vw, 2.8rem);
+}
+
+#answer h3 {
+  margin-top: 32px;
+}
+
+.table-wrap {
+  overflow-x: auto;
+  margin: 18px 0 26px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  white-space: nowrap;
+}
+
+caption {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+th,
+td {
+  padding: 12px 14px;
+  border-bottom: 1px solid #2d3932;
+  text-align: left;
+}
+
+th {
+  color: #9cf2c7;
+  font-size: .75rem;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+th:last-child,
+td:last-child {
+  text-align: right;
+}
+
+tbody tr:first-child td,
+tbody tr:last-child th,
+tbody tr:last-child td {
+  color: #9cf2c7;
+  font-weight: 800;
 }
 
 .methodology-link {

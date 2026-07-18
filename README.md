@@ -1,7 +1,7 @@
 # Lead Router
 
-Conversational Ginse action backed by one Netlify function. It evaluates the
-immutable
+Conversational Ginse action backed by the existing Netlify evaluator. It
+evaluates the immutable
 [ASCII Box lead workflow](https://github.com/ardjo-s/ascii-box-lead-workflow)
 across all configured, accessible, compatible OpenAI models.
 
@@ -35,13 +35,24 @@ The internal response preserves workflow identity, ranking, skips, failures,
 cost, latency, and limitations as evidence. `recommendation_text` is the concise
 answer intended for the Ginse conversation.
 
+## Ginse action
+
+The marketplace invokes `POST /run` with a short-lived Ed25519 bearer token and
+an `Idempotency-Key`. The adapter verifies the token against Ginse's public
+JWKS, claims the key atomically in site-wide Netlify Blobs, and returns the same
+stored result and stable `provider_operation_id` on replay. No Ginse or builder
+secret is stored in the repository.
+
+The published output contains `recommendation_markdown`, a stable result table
+with the recommended model, quality, latency, confidence, total and per-model
+measured cost, tested/skipped/failed coverage, reason, and limitations.
+
 The deployed `/methodology` page documents the frozen benchmark, deterministic
 scoring formulas, eligibility gate, observed cost and latency, and the model and
 provider variability that remains outside the scorer.
 
 ## Verified boundary
 
-The deterministic evaluator and local contract tests are included. Ginse AI
-integration is not publicly documented or verified, so this repository makes
-no Ginse-to-Codex claim. A deployment and live model comparison must be
-recorded before claiming Netlify or model integration.
+The deterministic evaluator and local contract tests are included. The Ginse
+listing, signed invocation, and replay contract may be claimed only after the
+public manifest passes Ginse verification and the listing is published.
