@@ -1,5 +1,5 @@
 import { createHash, createPublicKey, verify as verifySignature } from "node:crypto";
-import { getStore } from "@netlify/blobs";
+import { connectLambda, getStore } from "@netlify/blobs";
 import Ajv2020 from "ajv/dist/2020.js";
 import inputSchema from "../ginse/input.schema.json" with { type: "json" };
 import outputSchema from "../ginse/output.schema.json" with { type: "json" };
@@ -166,7 +166,12 @@ export function validateOperationId(value) {
   return value;
 }
 
-export function createBlobOperationStore(getStoreImpl = getStore) {
+export function createBlobOperationStore(
+  event,
+  getStoreImpl = getStore,
+  connectLambdaImpl = connectLambda,
+) {
+  connectLambdaImpl(event);
   const store = getStoreImpl({ name: "ginse-lead-router-runs", consistency: "strong" });
   const key = (operationId) => `runs/${operationId}`;
   return {
