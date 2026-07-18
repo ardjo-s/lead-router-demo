@@ -1,7 +1,7 @@
 {
   "schema_version": "2",
   "slug": "lead-router-ascii-box",
-  "display_name": "Lead Router — Team ASCII Box",
+  "display_name": "Lead Router — ASCII Box",
   "description": "Benchmarks accessible OpenAI models on the frozen ASCII Box lead workflow and returns one evidence-backed recommendation.",
   "presentation": {
     "action": "Benchmark lead routing",

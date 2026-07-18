@@ -1,10 +1,11 @@
 import assert from "node:assert/strict";
-import { generateKeyPairSync, sign } from "node:crypto";
+import { createHash, generateKeyPairSync, sign } from "node:crypto";
 import fs from "node:fs/promises";
 import test from "node:test";
 import { createHandler } from "../netlify/functions/run.mjs";
 import {
   actionOutputFromReport,
+  createBlobOperationStore,
   GINSE_APP_ID,
   GINSE_ISSUER,
   providerOperationId,
@@ -112,6 +113,23 @@ test("canonical fingerprints ignore object key order", () => {
     requestFingerprint({ repository, nested: { b: 2, a: 1 } }),
     requestFingerprint({ nested: { a: 1, b: 2 }, repository }),
   );
+});
+
+test("connects the legacy Lambda event before opening Netlify Blobs", () => {
+  const event = { headers: { host: "example.netlify.app" } };
+  const calls = [];
+  createBlobOperationStore(
+    event,
+    (options) => {
+      calls.push(["store", options]);
+      return {};
+    },
+    (value) => calls.push(["connect", value]),
+  );
+  assert.deepEqual(calls, [
+    ["connect", event],
+    ["store", { name: "ginse-lead-router-runs", consistency: "strong" }],
+  ]);
 });
 
 test("maps the report to the stable table-shaped Ginse output", () => {
@@ -230,12 +248,17 @@ test("rejects unsigned requests before touching storage", async () => {
 });
 
 test("generated manifest embeds the exact schemas and safe example", async () => {
-  const [manifest, inputSchema, outputSchema, example] = await Promise.all([
-    fs.readFile(new URL("../public/.well-known/ginse.json", import.meta.url), "utf8").then(JSON.parse),
+  const [manifestRaw, inputSchema, outputSchema, example] = await Promise.all([
+    fs.readFile(new URL("../public/.well-known/ginse.json", import.meta.url), "utf8"),
     fs.readFile(new URL("../ginse/input.schema.json", import.meta.url), "utf8").then(JSON.parse),
     fs.readFile(new URL("../ginse/output.schema.json", import.meta.url), "utf8").then(JSON.parse),
     fs.readFile(new URL("../ginse/example-input.json", import.meta.url), "utf8").then(JSON.parse),
   ]);
+  const manifest = JSON.parse(manifestRaw);
+  assert.equal(
+    createHash("sha256").update(manifestRaw).digest("hex"),
+    "58e4c9344f0a2664963e886f9052ab6701c254decb079068cb46e43e0355e6c8",
+  );
   assert.equal(manifest.run_url, "https://lead-router-ascii-box.netlify.app/run");
   assert.deepEqual(manifest.input_schema, inputSchema);
   assert.deepEqual(manifest.output_schema, outputSchema);

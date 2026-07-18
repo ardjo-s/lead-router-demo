@@ -56,7 +56,7 @@ export function createHandler({
     if (event.httpMethod === "OPTIONS") return { statusCode: 204, body: "" };
     try {
       await verifyBearer(authorization(event));
-      const store = getOperationStore();
+      const store = getOperationStore(event);
 
       if (event.httpMethod === "GET") {
         const operationId = validateOperationId(
