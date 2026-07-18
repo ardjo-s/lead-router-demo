@@ -1,0 +1,1 @@
+{"name":"lead-router-demo","version":"1.0.0","private":true,"type":"module","scripts":{"test":"node --test","check":"node --check netlify/functions/evaluate.mjs && node --check public/app.js"},"engines":{"node":">=20"}}

@@ -1,26 +1,38 @@
-# Lead Router demo
+# Lead Router
 
-One-hour Netlify demo that evaluates the same ASCII Box lead-qualification
-workflow across compatible OpenAI models and recommends the best model by
-measured quality, cost, and latency.
+One-page Netlify demo that evaluates the immutable
+[ASCII Box lead workflow](https://github.com/ardjo-s/ascii-box-lead-workflow)
+across all configured, accessible, compatible OpenAI models.
 
-Start with [`SPEC.md`](SPEC.md).
+## Run locally
 
-Benchmark input:
+Requires Node.js 20+.
 
-- Planned public URL:
-  `https://github.com/ardjo-s/ascii-box-lead-workflow`
-- Local source during development:
-  `/Users/ardjo/CODE/repos/ascii-box-lead-workflow`
+```bash
+npm test
+npm run check
+npx netlify dev
+```
 
-The application must not modify the benchmark repository.
+Set `OPENAI_API_KEY` in the Netlify server environment. It is never sent to the
+browser. The app fetches only seven declared static files from the hard-
+allowlisted public benchmark repository and never executes repository code.
 
-## Delivery target
+## HTTP contract
 
-- Minimal web page
-- One Netlify server function
-- OpenAI Responses API
-- One real comparison run
-- One public or access-controlled Netlify URL
+```bash
+curl -X POST https://YOUR-SITE.netlify.app/api/evaluate \
+  -H 'content-type: application/json' \
+  -d '{"repository":"https://github.com/ardjo-s/ascii-box-lead-workflow","ref":"main","run_label":"codex-smoke"}'
+```
 
-Implementation has not started.
+The response contains workflow identity, recommendation, ranking, skipped
+models, failed models, and limitations. Codex can call it only when an
+HTTP-capable tool is available; this is not a native Codex tool.
+
+## Verified boundary
+
+The deterministic evaluator and local contract tests are included. Ginse AI
+integration is not publicly documented or verified, so this repository makes
+no Ginse-to-Codex claim. A deployment and live model comparison must be
+recorded before claiming Netlify or model integration.
