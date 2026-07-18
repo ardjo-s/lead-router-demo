@@ -35,6 +35,10 @@ The internal response preserves workflow identity, ranking, skips, failures,
 cost, latency, and limitations as evidence. `recommendation_text` is the concise
 answer intended for the Ginse conversation.
 
+The deployed `/methodology` page documents the frozen benchmark, deterministic
+scoring formulas, eligibility gate, observed cost and latency, and the model and
+provider variability that remains outside the scorer.
+
 ## Verified boundary
 
 The deterministic evaluator and local contract tests are included. Ginse AI
