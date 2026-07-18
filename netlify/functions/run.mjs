@@ -126,6 +126,10 @@ export function createHandler({
         await store.finish(operationId, terminal, claim.etag);
         return responseForRecord(terminal, false);
       } catch (error) {
+        console.error("Ginse evaluation failed", JSON.stringify({
+          name: error?.name || null,
+          message: String(error?.message || "").slice(0, 300),
+        }));
         const publicError = error instanceof ConfigurationError
           ? { code: "not_configured", message: error.message }
           : { code: "evaluation_failed", message: "Evaluation failed." };
