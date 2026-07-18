@@ -8,6 +8,16 @@
   status = 200
 
 [[redirects]]
+  from = "/run"
+  to = "/.netlify/functions/run"
+  status = 200
+
+[[redirects]]
+  from = "/run/status"
+  to = "/.netlify/functions/run"
+  status = 200
+
+[[redirects]]
   from = "/methodology"
   to = "/methodology.html"
   status = 200

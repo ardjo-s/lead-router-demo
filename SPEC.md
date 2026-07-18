@@ -7,8 +7,14 @@ Status: `ready-for-agent`
 The final user-facing output is one textual recommendation in the Ginse
 conversation. It includes the winner, measured quality, estimated cost,
 measured latency, tested/skipped/failed coverage, and limitations. Ranking JSON
-remains internal evidence. No dashboard, chart, ranking table, or copy-JSON UI
-is required.
+remains internal evidence. The final Ginse text uses a stable Markdown result
+table; no separate dashboard, chart, sortable ranking page, or copy-JSON UI is
+required.
+
+Publishing on Ginse adds one narrow transport exception to the original
+no-auth/no-database constraint: the `/run` adapter verifies Ginse-signed
+invocations and uses Netlify Blobs only for durable idempotency. The evaluator,
+provider routing, benchmark, and deterministic scorer remain unchanged.
 
 The benchmark contains five frozen, dated cases built from real public
 professional evidence. It contains no private contact data and does not claim

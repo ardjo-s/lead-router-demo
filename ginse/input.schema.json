@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "repository"
+  ],
+  "properties": {
+    "repository": {
+      "type": "string",
+      "const": "https://github.com/ardjo-s/ascii-box-lead-workflow"
+    }
+  }
+}

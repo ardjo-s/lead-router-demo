@@ -1,0 +1,200 @@
+{
+  "schema_version": "2",
+  "slug": "lead-router-ascii-box",
+  "display_name": "Lead Router — Team ASCII Box",
+  "description": "Benchmarks accessible OpenAI models on the frozen ASCII Box lead workflow and returns one evidence-backed recommendation.",
+  "presentation": {
+    "action": "Benchmark lead routing",
+    "input": {
+      "label": "Workflow repository",
+      "icon": "link"
+    },
+    "output": {
+      "label": "Model recommendation",
+      "icon": "table"
+    }
+  },
+  "price": {
+    "amount_cents": 15,
+    "currency": "EUR"
+  },
+  "run_url": "https://lead-router-ascii-box.netlify.app/run",
+  "input_schema": {
+    "type": "object",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties": false,
+    "required": [
+      "repository"
+    ],
+    "properties": {
+      "repository": {
+        "type": "string",
+        "const": "https://github.com/ardjo-s/ascii-box-lead-workflow"
+      }
+    }
+  },
+  "output_schema": {
+    "type": "object",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties": false,
+    "required": [
+      "recommendation_markdown",
+      "recommended_model",
+      "quality",
+      "latency_ms",
+      "confidence",
+      "measured_total_cost_usd",
+      "models",
+      "tested_models",
+      "skipped_models",
+      "failed_models",
+      "limitations"
+    ],
+    "properties": {
+      "recommendation_markdown": {
+        "type": "string",
+        "minLength": 1
+      },
+      "recommended_model": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "quality": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "minimum": 0,
+        "maximum": 1
+      },
+      "latency_ms": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "minimum": 1
+      },
+      "confidence": {
+        "const": "demo-low"
+      },
+      "measured_total_cost_usd": {
+        "type": "number",
+        "minimum": 0
+      },
+      "models": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "model",
+            "status",
+            "quality",
+            "role_f1",
+            "evidence_exactness",
+            "company_fit_accuracy",
+            "measured_cost_usd",
+            "latency_ms",
+            "reason"
+          ],
+          "properties": {
+            "model": {
+              "type": "string"
+            },
+            "status": {
+              "enum": [
+                "completed",
+                "skipped",
+                "failed"
+              ]
+            },
+            "quality": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0,
+              "maximum": 1
+            },
+            "role_f1": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0,
+              "maximum": 1
+            },
+            "evidence_exactness": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0,
+              "maximum": 1
+            },
+            "company_fit_accuracy": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0,
+              "maximum": 1
+            },
+            "measured_cost_usd": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "latency_ms": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 1
+            },
+            "reason": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        }
+      },
+      "tested_models": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "skipped_models": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "failed_models": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "limitations": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "example": {
+    "input": {
+      "repository": "https://github.com/ardjo-s/ascii-box-lead-workflow"
+    }
+  },
+  "ownership_token": "ginse_verify_155bf13c58c94ef0bbae2bf979d62034"
+}

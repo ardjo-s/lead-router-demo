@@ -7,5 +7,5 @@ export const LIMITATIONS = [
   "Evaluates frozen lead qualification, not live discovery or scraping.",
   "Runs one trial per configured, accessible, compatible model.",
   "Pricing is a dated benchmark snapshot, not automatic live pricing.",
-  "Ginse-to-Codex and native Codex tool integration are unverified."
+  "This Ginse marketplace action is not a native Codex tool installation."
 ];
