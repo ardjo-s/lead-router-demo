@@ -77,10 +77,11 @@ export function createHandler({
       } catch {
         throw new GinseRequestError(400, "malformed_json", "Malformed JSON body.");
       }
+      const actionInput = rawInput?.input ?? rawInput;
       const operationId = providerOperationId(
         event.headers?.["idempotency-key"] || event.headers?.["Idempotency-Key"],
       );
-      const fingerprint = requestFingerprint(rawInput);
+      const fingerprint = requestFingerprint(actionInput);
       const existing = await store.get(operationId);
       if (existing) {
         if (existing.fingerprint !== fingerprint) {
@@ -92,7 +93,7 @@ export function createHandler({
         }
         return responseForRecord(existing, true);
       }
-      const input = validateGinseInput(rawInput);
+      const input = validateGinseInput(actionInput);
       const initial = {
         provider_operation_id: operationId,
         fingerprint,
@@ -141,6 +142,12 @@ export function createHandler({
       if (error instanceof GinseRequestError) {
         return json(error.status, { error: { code: error.code, message: error.message } });
       }
+      console.error("Ginse run infrastructure error", JSON.stringify({
+        name: error?.name || null,
+        code: error?.code || null,
+        status: error?.status || null,
+        message: String(error?.message || "").slice(0, 300),
+      }));
       return json(503, {
         error: { code: "service_unavailable", message: "Ginse action is unavailable." },
       });
@@ -148,4 +155,18 @@ export function createHandler({
   };
 }
 
-export const handler = createHandler();
+const webHandler = createHandler();
+
+export default async function run(request) {
+  const url = new URL(request.url);
+  const result = await webHandler({
+    httpMethod: request.method,
+    headers: Object.fromEntries(request.headers),
+    queryStringParameters: Object.fromEntries(url.searchParams),
+    body: request.method === "GET" || request.method === "HEAD" ? null : await request.text(),
+  });
+  return new Response(result.statusCode === 204 ? null : result.body, {
+    status: result.statusCode,
+    headers: result.headers,
+  });
+}

@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { createHash, generateKeyPairSync, sign } from "node:crypto";
 import fs from "node:fs/promises";
 import test from "node:test";
-import { createHandler } from "../netlify/functions/run.mjs";
+import runFunction, { createHandler } from "../netlify/functions/run.mjs";
 import {
   actionOutputFromReport,
   createBlobOperationStore,
@@ -128,7 +128,7 @@ test("canonical fingerprints ignore object key order", () => {
 });
 
 test("connects the legacy Lambda event before opening Netlify Blobs", () => {
-  const event = { headers: { host: "example.netlify.app" } };
+  const event = { blobs: "encoded-context", headers: { host: "example.netlify.app" } };
   const calls = [];
   createBlobOperationStore(
     event,
@@ -142,6 +142,37 @@ test("connects the legacy Lambda event before opening Netlify Blobs", () => {
     ["connect", event],
     ["store", { name: "ginse-lead-router-runs", consistency: "strong" }],
   ]);
+});
+
+test("uses the modern Function environment without Lambda compatibility", () => {
+  const calls = [];
+  createBlobOperationStore(
+    undefined,
+    (options) => {
+      calls.push(["store", options]);
+      return {};
+    },
+    () => calls.push(["connect"]),
+  );
+  assert.deepEqual(calls, [
+    ["store", { name: "ginse-lead-router-runs", consistency: "strong" }],
+  ]);
+});
+
+test("modern Function adapter rejects unsigned requests", async () => {
+  const response = await runFunction(new Request(
+    "https://lead-router-ascii-box.netlify.app/run",
+    {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "idempotency-key": "unsigned-modern",
+      },
+      body: JSON.stringify({ repository }),
+    },
+  ));
+  assert.equal(response.status, 401);
+  assert.equal((await response.json()).error.code, "missing_token");
 });
 
 test("maps the report to the stable table-shaped Ginse output", () => {
@@ -169,7 +200,7 @@ test("runs once, persists the terminal result, and replays it", async () => {
   const event = {
     httpMethod: "POST",
     headers: { authorization: "Bearer accepted", "idempotency-key": "same-key" },
-    body: JSON.stringify({ repository }),
+    body: JSON.stringify({ input: { repository } }),
   };
   const first = await handler(event);
   const replay = await handler(event);
