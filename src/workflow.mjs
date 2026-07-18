@@ -40,6 +40,7 @@ export async function fetchWorkflow({ ref }, fetchImpl = fetch) {
     benchmark.output_schema_path,
     benchmark.model_config_path,
     benchmark.pricing_path,
+    benchmark.source_ledger_path,
   ];
   if (declared.some((path) => typeof path !== "string") || new Set(declared).size !== declared.length) {
     throw new ClientError("Workflow manifest is incomplete or ambiguous.", 422);
@@ -53,9 +54,17 @@ export async function fetchWorkflow({ ref }, fetchImpl = fetch) {
     schema: json(benchmark.output_schema_path),
     models: json(benchmark.model_config_path),
     pricing: json(benchmark.pricing_path),
+    sourceLedger: json(benchmark.source_ledger_path),
   };
   if (!Array.isArray(workflow.cases.cases) || workflow.cases.cases.length === 0) {
     throw new ClientError("Workflow contains no benchmark cases.", 422);
+  }
+  if (
+    workflow.cases.workflow_version !== benchmark.workflow_version ||
+    workflow.truth.workflow_version !== benchmark.workflow_version ||
+    workflow.sourceLedger.workflow_version !== benchmark.workflow_version
+  ) {
+    throw new ClientError("Workflow versions do not match the benchmark manifest.", 422);
   }
   return workflow;
 }

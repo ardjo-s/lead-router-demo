@@ -20,7 +20,8 @@ application.
   input.
 - Do not change the source benchmark, fixtures, ground truth, model IDs, or
   scoring weights.
-- Use OpenAI Responses API with server-side credentials only.
+- Prefer OpenRouter's OpenAI-model routes with `OPENROUTER_API_KEY`; keep the
+  direct OpenAI Responses API as an optional server-side fallback.
 - Never execute code fetched from a repository.
 - No live scraping, personal contact data, auth, database, queue, or unrelated
   framework work in the MVP.

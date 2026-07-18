@@ -15,10 +15,13 @@ npm run check
 npx netlify dev
 ```
 
-Set `OPENAI_API_KEY` in the Netlify server environment. It is never sent to the
-browser. The app fetches the benchmark manifest, then only its declared static
-workflow/config files from the hard-allowlisted public repository. It never
-executes repository code or hardcodes the benchmark case count.
+Set `OPENROUTER_API_KEY` in the Netlify server environment. The backend maps
+the fixed candidates to their `openai/` OpenRouter IDs; `OPENAI_API_KEY` remains
+an optional direct-provider fallback. Credentials are never sent to the browser.
+The app fetches the benchmark manifest, then only its declared static
+workflow/config files and public-source ledger from the hard-allowlisted public
+repository. It never executes repository code or hardcodes the benchmark case
+count.
 
 ## HTTP contract
 

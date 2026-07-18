@@ -2,6 +2,18 @@
 
 Status: `ready-for-agent`
 
+## Authoritative MVP override
+
+The final user-facing output is one textual recommendation in the Ginse
+conversation. It includes the winner, measured quality, estimated cost,
+measured latency, tested/skipped/failed coverage, and limitations. Ranking JSON
+remains internal evidence. No dashboard, chart, ranking table, or copy-JSON UI
+is required.
+
+The benchmark contains five frozen, dated cases built from real public
+professional evidence. It contains no private contact data and does not claim
+purchase intent.
+
 ## Problem Statement
 
 The CEO of ASCII Box repeatedly uses Codex to research enterprise leads but has
@@ -18,17 +30,18 @@ scraper or a general evaluation platform.
 
 ## Solution
 
-Build a one-page application called Lead Router with one server-side evaluation
-endpoint. The user supplies the ASCII Box workflow repository URL. The server
-reads only the declared static benchmark files, runs the exact same prompt and
-five labeled cases through every configured, accessible, compatible OpenAI
-model, scores outputs deterministically, measures latency and token usage,
-estimates cost from dated pricing, and recommends the best eligible model.
+Build a conversational action called Lead Router with one server-side
+evaluation endpoint. The user supplies the ASCII Box workflow repository URL.
+The server reads only the declared static benchmark files, runs the exact same
+prompt and five labeled cases through every configured, accessible, compatible
+OpenAI model, scores outputs deterministically, measures latency and token
+usage, estimates cost from dated pricing, and recommends the best eligible
+model.
 
-The UI shows the recommendation, full model ranking, failures, skipped models,
-and limitations. The result is also returned as structured JSON so Codex can
-call the endpoint through an HTTP-capable tool. Ginse-to-Codex integration is a
-separate proof gate: it may be claimed only when a real invocation is shown.
+The Ginse conversation shows the textual recommendation. The backend also
+returns a structured ranking, failures, skips, and limitations as internal
+evidence. Ginse-to-Codex integration is a separate proof gate: it may be
+claimed only when a real invocation is shown.
 
 The single highest testing seam is the external evaluation contract:
 repository URL in, complete evaluation report out. This directly matches the
@@ -65,22 +78,22 @@ confirmed Input → Operation → Output requirement.
     refuses to recommend an unusable model.
 14. As the ASCII Box CEO, I want one recommended model with a plain-language
     reason, so that I can act without reading raw traces.
-15. As the ASCII Box CEO, I want the complete ranking visible, so that I can
-    understand the tradeoff behind the recommendation.
+15. As the ASCII Box CEO, I want the text to summarize the measured tradeoff,
+    so that I can act without opening a dashboard.
 16. As the ASCII Box CEO, I want inaccessible models shown as skipped with a
     reason, so that the report never overstates coverage.
 17. As the ASCII Box CEO, I want failed models isolated, so that one API error
     does not destroy the entire comparison.
 18. As the ASCII Box CEO, I want the report to distinguish completed, skipped,
     and failed models, so that “all models” has an auditable meaning.
-19. As the ASCII Box CEO, I want the raw JSON report copyable, so that I can
-    provide it to Codex or preserve demo evidence.
-20. As the ASCII Box CEO, I want visible limitations, so that a five-case demo
-    is not mistaken for production proof.
-21. As a demo viewer, I want a prefilled repository and one obvious action, so
-    that I can understand the product without setup explanation.
-22. As a demo viewer, I want quality, cost, and latency shown in one table, so
-    that the recommendation is immediately legible.
+19. As the builder, I want the raw JSON retained internally, so that the
+    recommendation remains auditable.
+20. As the ASCII Box CEO, I want limitations in the conversation text, so that
+    a five-case demo is not mistaken for production proof.
+21. As a demo viewer, I want to provide one repository URL and receive one
+    answer, so that the product needs no UI explanation.
+22. As a demo viewer, I want quality, cost, and latency in the same concise
+    response, so that the recommendation is immediately legible.
 23. As a builder, I want one server function and no database, so that the demo
     can ship within the hour.
 24. As a builder, I want a fixed candidate manifest, so that model drift cannot
@@ -93,8 +106,8 @@ confirmed Input → Operation → Output requirement.
     that the demo and source repository agree.
 28. As a builder, I want repository files fetched as data only, so that an
     arbitrary GitHub repository cannot execute code on the server.
-29. As a builder, I want the OpenAI key stored only on Netlify's server side, so
-    that it is never exposed to the browser.
+29. As a builder, I want the provider key stored only on Netlify's server side,
+    so that it is never exposed to the browser.
 30. As a builder, I want bounded files, requests, and model timeouts, so that one
     malformed input cannot consume the entire function budget.
 31. As a builder, I want errors sanitized, so that credentials and provider
@@ -113,7 +126,7 @@ confirmed Input → Operation → Output requirement.
 
 ## Implementation Decisions
 
-- Build a static single-page interface backed by one Netlify server function.
+- Build one conversational Ginse action backed by one Netlify server function.
 - Keep one external product seam: an evaluation request returns a complete
   evaluation report. Internal modules may support this seam but do not create
   additional public endpoints for the MVP.
@@ -121,8 +134,11 @@ confirmed Input → Operation → Output requirement.
   allowlist the source repository in the demo.
 - Read only the workflow manifest and the static files it declares. Never clone
   or execute repository content.
-- Use the OpenAI Responses API. Supply the identical developer prompt, complete
-  five-case input, reasoning effort, and strict JSON schema to every candidate.
+- Prefer OpenRouter chat completions with `OPENROUTER_API_KEY`, mapping the
+  candidates to their `openai/` routes. Keep the direct OpenAI Responses API
+  with `OPENAI_API_KEY` as an optional fallback.
+- Supply the identical developer prompt, complete five-case input, reasoning
+  effort, and strict JSON schema to every candidate.
 - Use the configured GPT-5.6 Sol, Terra, and Luna candidates at medium reasoning
   effort. Intersect them with models accessible to the API project.
 - Run one batch request per model. Preserve per-call status, duration, usage,
@@ -142,7 +158,7 @@ confirmed Input → Operation → Output requirement.
 - Return a report containing workflow identity, recommendation, ranking,
   skipped models, failed models, and limitations.
 - Mark recommendation confidence `demo-low`.
-- Store the OpenAI credential only in Netlify server environment variables.
+- Store the provider credential only in Netlify server environment variables.
 - Use no database, authentication, queue, background worker, analytics, or
   general design system.
 - Build from the Ginse AI conversation when that surface works. If its
@@ -168,9 +184,10 @@ confirmed Input → Operation → Output requirement.
 - Test missing pricing and require the model to be ineligible.
 - Test an unallowlisted repository and require rejection before any model call.
 - Test malformed or oversized workflow data and require a bounded client error.
-- Test that browser responses and logs never contain the OpenAI key.
+- Test that browser responses and logs never contain provider keys.
 - Finish with one live deployed smoke: start a comparison, complete at least two
-  models, render the same winner in UI and JSON, and preserve the raw report.
+  models, return the same winner in `recommendation_text` and the internal
+  ranking, and preserve the raw report.
 - Prefer contract-level tests over tests of framework components or internal
   function calls.
 
@@ -201,9 +218,9 @@ confirmed Input → Operation → Output requirement.
 - The demo repository and workflow repository must remain separate.
 - The build is timeboxed to 60 minutes:
   - 0–10: scaffold and load benchmark
-  - 10–25: Responses API calls
+  - 10–25: OpenRouter/OpenAI model calls
   - 25–35: scoring, cost, ranking
-  - 35–45: minimal result UI
+  - 35–45: concise conversational result
   - 45–55: Netlify deployment
   - 55–60: live smoke and evidence capture
 - If behind schedule, hardcode the allowlisted workflow URL and candidate set.

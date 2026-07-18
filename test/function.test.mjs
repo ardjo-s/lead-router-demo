@@ -12,7 +12,9 @@ test("rejects an unallowlisted repository before model work", async () => {
 });
 
 test("missing credential response never exposes environment secrets", async () => {
-  const previous = process.env.OPENAI_API_KEY;
+  const previousOpenRouter = process.env.OPENROUTER_API_KEY;
+  const previousOpenAI = process.env.OPENAI_API_KEY;
+  delete process.env.OPENROUTER_API_KEY;
   delete process.env.OPENAI_API_KEY;
   process.env.UNRELATED_TEST_SECRET = "never-return-this";
   const result = await handler({
@@ -21,7 +23,8 @@ test("missing credential response never exposes environment secrets", async () =
       repository: "https://github.com/ardjo-s/ascii-box-lead-workflow",
     }),
   });
-  if (previous) process.env.OPENAI_API_KEY = previous;
+  if (previousOpenRouter) process.env.OPENROUTER_API_KEY = previousOpenRouter;
+  if (previousOpenAI) process.env.OPENAI_API_KEY = previousOpenAI;
   delete process.env.UNRELATED_TEST_SECRET;
   assert.equal(result.statusCode, 503);
   assert.equal(result.body.includes("never-return-this"), false);
