@@ -173,7 +173,7 @@ export function createBlobOperationStore(
   getStoreImpl = getStore,
   connectLambdaImpl = connectLambda,
 ) {
-  connectLambdaImpl(event);
+  if (event?.blobs) connectLambdaImpl(event);
   const store = getStoreImpl({ name: "ginse-lead-router-runs", consistency: "strong" });
   const key = (operationId) => `runs/${operationId}`;
   return {
