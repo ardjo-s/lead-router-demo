@@ -1,4 +1,4 @@
-import { ALLOWED_REPOSITORY, DEFAULT_REF, MAX_FILE_BYTES, REQUIRED_PATHS } from "./constants.mjs";
+import { ALLOWED_REPOSITORY, DEFAULT_REF, MAX_FILE_BYTES } from "./constants.mjs";
 
 export class ClientError extends Error {
   constructor(message, status = 400) { super(message); this.status = status; }
@@ -20,22 +20,42 @@ async function readBounded(response, path) {
 }
 export async function fetchWorkflow({ ref }, fetchImpl = fetch) {
   const files = {};
-  for (const path of REQUIRED_PATHS) {
+  const fetchPath = async (path) => {
+    if (!/^(workflow|config)\/[A-Za-z0-9._/-]+$/.test(path) || path.includes("..")) {
+      throw new ClientError(`Unsafe workflow path: ${path}.`, 422);
+    }
     const url = `https://raw.githubusercontent.com/ardjo-s/ascii-box-lead-workflow/${encodeURIComponent(ref)}/${path}`;
     files[path] = await readBounded(await fetchImpl(url, { headers: { "user-agent": "lead-router-demo/1.0" }, signal: AbortSignal.timeout(10_000) }), path);
-  }
+  };
   const json = (path) => {
     try { return JSON.parse(files[path]); }
     catch { throw new ClientError(`Malformed workflow JSON: ${path}.`, 422); }
   };
+  await fetchPath("workflow/benchmark.json");
+  const benchmark = json("workflow/benchmark.json");
+  const declared = [
+    benchmark.prompt_path,
+    benchmark.cases_path,
+    benchmark.ground_truth_path,
+    benchmark.output_schema_path,
+    benchmark.model_config_path,
+    benchmark.pricing_path,
+  ];
+  if (declared.some((path) => typeof path !== "string") || new Set(declared).size !== declared.length) {
+    throw new ClientError("Workflow manifest is incomplete or ambiguous.", 422);
+  }
+  for (const path of declared) await fetchPath(path);
   const workflow = {
-    benchmark: json("workflow/benchmark.json"), prompt: files["workflow/prompt.md"],
-    cases: json("workflow/cases.json"), truth: json("workflow/ground-truth.json"),
-    schema: json("workflow/output.schema.json"), models: json("config/models.json"),
-    pricing: json("config/model-pricing.json")
+    benchmark,
+    prompt: files[benchmark.prompt_path],
+    cases: json(benchmark.cases_path),
+    truth: json(benchmark.ground_truth_path),
+    schema: json(benchmark.output_schema_path),
+    models: json(benchmark.model_config_path),
+    pricing: json(benchmark.pricing_path),
   };
-  if (workflow.benchmark.prompt_path !== "workflow/prompt.md" || workflow.benchmark.cases_path !== "workflow/cases.json" || workflow.benchmark.ground_truth_path !== "workflow/ground-truth.json" || workflow.cases.cases?.length !== 5) {
-    throw new ClientError("Workflow manifest does not match the demo contract.", 422);
+  if (!Array.isArray(workflow.cases.cases) || workflow.cases.cases.length === 0) {
+    throw new ClientError("Workflow contains no benchmark cases.", 422);
   }
   return workflow;
 }
